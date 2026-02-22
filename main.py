@@ -11,34 +11,49 @@ from models.Compra            import Compra
 from models.DetalleCompra     import DetalleCompra
 from models.Pago              import Pago
 
-# 1. Conexión
+from services.usuario_service import UsuarioService
+
+ALL_MODELS = [
+    Usuario, Condominio, Producto,
+    UsuarioCondominio, Tarjeta,
+    Compra, DetalleCompra, Pago,
+]
+
+# ── Conexión y tablas ─────────────────────────────────────────────
 conn = DatabaseConnection.get_instance()
 conn.connect()
-
-# 2. Crear tablas — el orden importa por las FK
 initializer = DatabaseInitializer(conn.get_db())
-initializer.create_tables([
-    Usuario,            # sin dependencias
-    Condominio,         # sin dependencias
-    Producto,           # sin dependencias
-    UsuarioCondominio,  # depende de: Usuario, Condominio
-    Tarjeta,            # depende de: Usuario
-    Compra,             # depende de: Usuario, Condominio
-    DetalleCompra,      # depende de: Compra, Producto
-    Pago,               # depende de: Compra, Tarjeta
-])
+initializer.create_tables(ALL_MODELS)
 
-# 3. Verificar que existen
-initializer.verify_tables([
-    Usuario,
-    Condominio,
-    Producto,
-    UsuarioCondominio,
-    Tarjeta,
-    Compra,
-    DetalleCompra,
-    Pago,
-])
+# ── Probar CRUD de Usuario ────────────────────────────────────────
+service = UsuarioService()
+
+# CREATE
+print("\n── CREATE ──────────────────────────")
+juan = service.registrar(
+    nombre="Juan", apellido="Pérez",
+    email="juan@email.com", cedula="001-0000001-1",
+    edad=30, telefono="809-555-0101"
+)
+print(juan)
+
+# READ
+print("\n── READ ────────────────────────────")
+encontrado = service.buscar_por_id(juan.id)
+print(encontrado)
+
+todos = service.listar()
+print(f"Total usuarios activos: {len(todos)}")
+
+# UPDATE
+print("\n── UPDATE ──────────────────────────")
+actualizado = service.actualizar(juan.id, telefono="809-999-0000")
+print(f"Teléfono nuevo: {actualizado.telefono}")
+
+# DELETE (soft)
+print("\n── DELETE ──────────────────────────")
+service.eliminar(juan.id)
+print(f"Usuarios activos tras delete: {len(service.listar())}")
 
 if __name__ == "__main__":
     print(conn)
