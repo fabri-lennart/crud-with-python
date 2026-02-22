@@ -8,5 +8,7 @@ dependencies = [
     "configparser>=7.2.0",
     "cryptography>=46.0.4",
     "loguru>=0.7.3",
+    "peewee>=4.0.0",
+    "pewee>=0.1.0.dev9",
     "pymysql>=1.1.2",
 ]
